@@ -13,6 +13,7 @@ import bank from "./../../images/fi-rs-bank.png"
 import bank2 from "./../../images/fi-rs-bank (1).png"
 import apps from "./../../images/fi-rs-apps.png"
 import useLocalStorage from "../hooks/useLocalStore"
+import { useState } from "react"
 
 let tabsData = [
   {
@@ -20,12 +21,14 @@ let tabsData = [
     iconSrc: apps,
     title: "",
     isActive: false,
+    order: 1,
   },
   {
     id: 2,
     iconSrc: bank,
     title: "Dashboard",
     isActive: false,
+    order: 2,
   },
   {
     id: 3,
@@ -33,12 +36,14 @@ let tabsData = [
     iconSrc: bank2,
     title: "Banking",
     isActive: false,
+    order: 3,
   },
   {
     id: 4,
     iconSrc: browser,
     title: "Telefonie",
     isActive: false,
+    order: 4,
   },
   {
     id: 5,
@@ -46,6 +51,7 @@ let tabsData = [
     iconSrc: chart,
     title: "Accounting",
     isActive: false,
+    order: 5,
   },
   {
     id: 6,
@@ -53,12 +59,14 @@ let tabsData = [
     iconSrc: cube,
     title: "Verkauf",
     isActive: false,
+    order: 6,
   },
   {
     id: 7,
     iconSrc: list,
     title: "Statistik",
     isActive: false,
+    order: 7,
   },
   {
     id: 8,
@@ -66,6 +74,7 @@ let tabsData = [
     iconSrc: phoneCall,
     title: "Post Office",
     isActive: false,
+    order: 8,
   },
   {
     id: 9,
@@ -73,6 +82,7 @@ let tabsData = [
     iconSrc: settings,
     title: "Administration",
     isActive: false,
+    order: 9,
   },
   {
     id: 10,
@@ -80,6 +90,7 @@ let tabsData = [
     iconSrc: shop,
     title: "Help",
     isActive: false,
+    order: 10,
   },
   {
     id: 11,
@@ -87,6 +98,7 @@ let tabsData = [
     iconSrc: shopingCart,
     title: "Warenbestand",
     isActive: false,
+    order: 11,
   },
   {
     id: 12,
@@ -94,6 +106,7 @@ let tabsData = [
     iconSrc: userAddBtn,
     title: "Auswahllisten",
     isActive: false,
+    order: 12,
   },
   {
     id: 13,
@@ -101,6 +114,7 @@ let tabsData = [
     iconSrc: userAddBtn,
     title: "Winkauf",
     isActive: false,
+    order: 13,
   },
   {
     id: 14,
@@ -108,17 +122,30 @@ let tabsData = [
     iconSrc: book,
     title: "Rechn",
     isActive: false,
+    order: 14,
   },
 ]
 
 export default function TabsContainer() {
   const [pinnedTabs, setPinnedTabs] = useLocalStorage("pinnedTabs", [])
+  const [currentTab, setCurrentTab] = useState()
 
   const filteredTabsData = tabsData.filter(
     (tabData) => !pinnedTabs.some((pinnedTab) => pinnedTab.id === tabData.id)
   )
 
-  let arrayToRender = [...pinnedTabs, ...filteredTabsData]
+  const [arrayToRender, setArrayTorender] = useState([
+    ...pinnedTabs,
+    ...filteredTabsData,
+  ])
+
+  const sortCards = (a, b) => {
+    if (a.order > b.order) {
+      return 1
+    } else {
+      return -1
+    }
+  }
 
   return (
     <div
@@ -127,7 +154,7 @@ export default function TabsContainer() {
         flexDirection: "row",
       }}
     >
-      {arrayToRender.map((item) => {
+      {arrayToRender.sort(sortCards).map((item) => {
         const isPinned = pinnedTabs.some(
           (pinnedTab) => pinnedTab.id === item.id
         )
@@ -141,6 +168,10 @@ export default function TabsContainer() {
             setPinnedTabs={setPinnedTabs}
             tab={item}
             isPinned={isPinned}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+            setArrayTorender={setArrayTorender}
+            arrayToRender={arrayToRender}
           />
         )
       })}

@@ -1,7 +1,7 @@
 import { bool, func, number } from "prop-types"
 import pinIcon from "./../../images/fi-rs-thumbtack.png"
 
-export default function Pin({ isVisible, pageX, onPinClick, isTabPinned }) {
+export default function Pin({ isVisible, onPinClick, isTabPinned }) {
   return (
     <div
       style={{
@@ -10,7 +10,6 @@ export default function Pin({ isVisible, pageX, onPinClick, isTabPinned }) {
         display: "flex",
         alignItems: "center",
         top: "40px",
-        left: `${Math.abs(pageX)}px`,
         border: "1px solid #AEB6CE33",
         backgroundColor: "#fff",
         height: "35px",

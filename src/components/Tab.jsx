@@ -1,14 +1,24 @@
-import PropTypes from "prop-types"
+import PropTypes, { array, func, object } from "prop-types"
 import { useState } from "react"
 import closeIconHover from "./../../images/closeHover.png"
 import Pin from "./Pin"
 import { useRef, useCallback } from "react"
 import useMouse from "@react-hook/mouse-position"
 
-export default function Tab({ icon, title, setPinnedTabs, tab, isPinned }) {
+export default function Tab({
+  icon,
+  title,
+  setPinnedTabs,
+  tab,
+  isPinned,
+  currentTab,
+  setCurrentTab,
+  setArrayTorender,
+}) {
   const [close, setCloseIcon] = useState(false)
   const [isTabActive, setIsTabActive] = useState(false)
   const [isTabPinned, setIsTabPinned] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   const ref = useRef(null)
   const mouse = useMouse(ref, {
@@ -44,12 +54,50 @@ export default function Tab({ icon, title, setPinnedTabs, tab, isPinned }) {
       setPinnedTabs((tabs) =>
         tabs.filter((existingTab) => existingTab.id !== tab.id)
       )
+      setIsTabPinned(!isTabPinned)
     }
+  }
+
+  function dragStartHandler(e, tab) {
+    setIsDragging(true)
+    console.log("drag", tab)
+    setCurrentTab(tab)
+  }
+  function dragEndHandler() {
+    setIsDragging(false)
+  }
+  function onDragOverHandler(e) {
+    e.preventDefault()
+  }
+  function dropHandler(e, tab) {
+    e.preventDefault()
+    setArrayTorender((prevArray) =>
+      prevArray.map((t) => {
+        if (t.id === tab.id) {
+          return { ...t, order: currentTab.order }
+        }
+        if (t.id === currentTab.id) {
+          return { ...t, order: tab.order }
+        }
+        return t
+      })
+    )
+  }
+
+  function handleRemoveClick(e) {
+    e.stopPropagation()
+    setArrayTorender((prevArray) => prevArray.filter((t) => t.id !== tab.id))
   }
 
   return (
     <div
       ref={ref}
+      draggable={true}
+      onDragStart={(e) => dragStartHandler(e, tab)}
+      onDragLeave={(e) => dragEndHandler(e)}
+      onDragEnd={(e) => dragEndHandler(e)}
+      onDragOver={(e) => onDragOverHandler(e)}
+      onDrop={(e) => dropHandler(e, tab)}
       style={{
         display: "flex",
         alignItems: "center",
@@ -58,8 +106,9 @@ export default function Tab({ icon, title, setPinnedTabs, tab, isPinned }) {
         fontFamily: "Poppins",
         fontSize: "15px",
         borderTop: isPinned ? "3px solid #4690E2" : "none",
-        backgroundColor: isTabActive ? "#F1F5F8" : "#fff",
         whiteSpace: "nowrap",
+        cursor: "grab",
+        backgroundColor: isDragging ? "#333" : isTabActive ? "#F1F5F8" : "#fff",
       }}
       onClick={() => {
         onTabClick()
@@ -90,6 +139,9 @@ export default function Tab({ icon, title, setPinnedTabs, tab, isPinned }) {
           visibility: close ? "visible" : "hidden",
           cursor: "pointer",
         }}
+        onClick={(e) => {
+          handleRemoveClick(e)
+        }}
       />
       <Pin
         isVisible={close}
@@ -108,4 +160,8 @@ Tab.propTypes = {
   setPinnedTabs: PropTypes.func,
   tab: PropTypes.object,
   isPinned: PropTypes.bool,
+  currentTab: object,
+  setCurrentTab: func,
+  setArrayTorender: func,
+  arrayToRender: array,
 }
