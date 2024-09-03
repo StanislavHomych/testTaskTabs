@@ -9,7 +9,7 @@ export default function Pin({ isVisible, onPinClick, isTabPinned }) {
         visibility: isVisible ? "visible" : "hidden",
         display: "flex",
         alignItems: "center",
-        top: "40px",
+        top: "30px",
         border: "1px solid #AEB6CE33",
         backgroundColor: "#fff",
         height: "35px",

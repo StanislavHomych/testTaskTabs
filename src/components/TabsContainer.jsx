@@ -13,7 +13,8 @@ import bank from "./../../images/fi-rs-bank.png"
 import bank2 from "./../../images/fi-rs-bank (1).png"
 import apps from "./../../images/fi-rs-apps.png"
 import useLocalStorage from "../hooks/useLocalStore"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import DropdownMenu from "./DropdownMenu"
 
 let tabsData = [
   {
@@ -22,6 +23,7 @@ let tabsData = [
     title: "",
     isActive: false,
     order: 1,
+    showInMain: true,
   },
   {
     id: 2,
@@ -29,6 +31,7 @@ let tabsData = [
     title: "Dashboard",
     isActive: false,
     order: 2,
+    showInMain: true,
   },
   {
     id: 3,
@@ -37,6 +40,7 @@ let tabsData = [
     title: "Banking",
     isActive: false,
     order: 3,
+    showInMain: true,
   },
   {
     id: 4,
@@ -44,6 +48,7 @@ let tabsData = [
     title: "Telefonie",
     isActive: false,
     order: 4,
+    showInMain: true,
   },
   {
     id: 5,
@@ -52,6 +57,7 @@ let tabsData = [
     title: "Accounting",
     isActive: false,
     order: 5,
+    showInMain: true,
   },
   {
     id: 6,
@@ -60,6 +66,7 @@ let tabsData = [
     title: "Verkauf",
     isActive: false,
     order: 6,
+    showInMain: true,
   },
   {
     id: 7,
@@ -67,6 +74,7 @@ let tabsData = [
     title: "Statistik",
     isActive: false,
     order: 7,
+    showInMain: true,
   },
   {
     id: 8,
@@ -75,6 +83,7 @@ let tabsData = [
     title: "Post Office",
     isActive: false,
     order: 8,
+    showInMain: true,
   },
   {
     id: 9,
@@ -83,6 +92,7 @@ let tabsData = [
     title: "Administration",
     isActive: false,
     order: 9,
+    showInMain: true,
   },
   {
     id: 10,
@@ -91,6 +101,7 @@ let tabsData = [
     title: "Help",
     isActive: false,
     order: 10,
+    showInMain: true,
   },
   {
     id: 11,
@@ -99,6 +110,7 @@ let tabsData = [
     title: "Warenbestand",
     isActive: false,
     order: 11,
+    showInMain: true,
   },
   {
     id: 12,
@@ -107,6 +119,7 @@ let tabsData = [
     title: "Auswahllisten",
     isActive: false,
     order: 12,
+    showInMain: true,
   },
   {
     id: 13,
@@ -115,6 +128,7 @@ let tabsData = [
     title: "Winkauf",
     isActive: false,
     order: 13,
+    showInMain: true,
   },
   {
     id: 14,
@@ -123,59 +137,85 @@ let tabsData = [
     title: "Rechn",
     isActive: false,
     order: 14,
+    showInMain: true,
   },
 ]
 
 export default function TabsContainer() {
   const [pinnedTabs, setPinnedTabs] = useLocalStorage("pinnedTabs", [])
-  const [currentTab, setCurrentTab] = useState()
-
-  const filteredTabsData = tabsData.filter(
-    (tabData) => !pinnedTabs.some((pinnedTab) => pinnedTab.id === tabData.id)
-  )
-
-  const [arrayToRender, setArrayTorender] = useState([
+  const [currentTab, setCurrentTab] = useState(null)
+  // eslint-disable-next-line no-unused-vars
+  const [visibleItems, setVisibleItems] = useState([])
+  const [elementsToShowInDropDown, setElementsToShowInDropDown] = useState([])
+  const [arrayToRender, setArrayToRender] = useState([
     ...pinnedTabs,
-    ...filteredTabsData,
+    ...tabsData.filter(
+      (tabData) => !pinnedTabs.some((pinnedTab) => pinnedTab.id === tabData.id)
+    ),
   ])
 
-  const sortCards = (a, b) => {
-    if (a.order > b.order) {
-      return 1
-    } else {
-      return -1
-    }
+  console.log(pinnedTabs)
+
+  const updateItems = () => {
+    const container = document.getElementById("container")
+    if (!container) return
+
+    const containerWidth = container.clientWidth
+    const itemElements = document.querySelectorAll(".item")
+
+    let totalWidth = 0
+    const visible = []
+    const overflow = []
+
+    itemElements.forEach((element, index) => {
+      totalWidth += element.clientWidth
+      if (totalWidth <= containerWidth) {
+        visible.push(arrayToRender[index])
+      } else {
+        overflow.push(arrayToRender[index])
+      }
+    })
+
+    setVisibleItems(visible)
+    setElementsToShowInDropDown(overflow)
   }
+
+  useEffect(() => {
+    updateItems()
+    window.addEventListener("resize", updateItems)
+
+    return () => {
+      window.removeEventListener("resize", updateItems)
+    }
+  }, [arrayToRender])
+
+  const sortCards = (a, b) => a.order - b.order
 
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "row",
+        width: "100%",
+        justifyContent: "space-between",
       }}
+      id="container"
     >
-      {arrayToRender.sort(sortCards).map((item) => {
-        const isPinned = pinnedTabs.some(
-          (pinnedTab) => pinnedTab.id === item.id
-        )
-
-        return (
-          <Tab
-            key={item.id}
-            icon={item.iconSrc}
-            title={item.title}
-            pinnedTabs={pinnedTabs}
-            setPinnedTabs={setPinnedTabs}
-            tab={item}
-            isPinned={isPinned}
-            currentTab={currentTab}
-            setCurrentTab={setCurrentTab}
-            setArrayTorender={setArrayTorender}
-            arrayToRender={arrayToRender}
-          />
-        )
-      })}
-      <div></div>
+      {arrayToRender.sort(sortCards).map((item) => (
+        <Tab
+          key={item.id}
+          icon={item.iconSrc}
+          title={item.title}
+          setPinnedTabs={setPinnedTabs}
+          tab={item}
+          isPinned={pinnedTabs.some((pinnedTab) => pinnedTab.id === item.id)}
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          setArrayToRender={setArrayToRender}
+          isActive={currentTab?.id === item.id}
+        />
+      ))}
+      <DropdownMenu elementsToShowInDropDown={elementsToShowInDropDown} />
     </div>
   )
 }
